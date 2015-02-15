@@ -1,0 +1,10 @@
+Backlog:
+1. Hide non default namespace events
+2. Show hierarchy of calls as a tree
+3. Recursion of triggers
+4. Filter by word
+5. Show/hide time column
+6. Show number of log line
+7. Show with different color, border some selected text like Sublime Text
+8. Correct show long lines - wrap words automatically
+
