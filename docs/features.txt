@@ -7,4 +7,6 @@ Backlog:
 6. Show number of log line
 7. Show with different color, border some selected text like Sublime Text
 8. Correct show long lines - wrap words automatically
+9. Show short time column instead of long
+
 

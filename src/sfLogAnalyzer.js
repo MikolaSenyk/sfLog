@@ -1,8 +1,26 @@
 var SfLogAnalyzer = {
 	LIMIT_USAGE_FOR_NS: 'LIMIT_USAGE_FOR_NS',
+	// DateTime column params
+	DT_COLUMN_FULL: 'dtFull',
+	DT_COLUMN_SHORT: 'dtShort',
+	DT_COLUMN_OFF: 'dtOff',
+	// Log line type prefixed
+	TPR_SYSTEM_METHOD: 'SYSTEM_METHOD',
 	info: {
 		logLevel: {}
-	}
+	},
+	lines: []
+};
+
+SfLogAnalyzer.filter = {
+	columns: {
+		dateTime: SfLogAnalyzer.DT_COLUMN_OFF
+	},
+	visibleTypes: {
+		'SYSTEM_METHOD_ENTRY': false,
+		'SYSTEM_METHOD_EXIT': false
+	},
+	search: 'SOQL'
 };
 
 SfLogAnalyzer.init = function(textAreaId) {
@@ -10,6 +28,7 @@ SfLogAnalyzer.init = function(textAreaId) {
 	logText = document.getElementById(textAreaId).innerHTML;
 	console.log('File size: ' + logText.length);
 	rawLines = logText.split('\n');
+	rawLines.push('00:00:00.000 (1)|FAKE_LAST_LINE');
 	console.log('Number of lines: ' + rawLines.length);
 	// TODO first line - detect version and log level
 	this.parseFirstLine(rawLines[0]);
@@ -19,11 +38,32 @@ SfLogAnalyzer.init = function(textAreaId) {
 		if ( reLineBegin.test(rawLines[i]) ) {
 			line = this.parseLine(currLines.join('\n'));
 			if ( line ) {
-				line.appendTo('logContainer');
+				this.lines.push(line);
 			}
 			currLines = [];
 		}
 		currLines.push(rawLines[i]);
+	}
+	this.show();
+
+};
+
+SfLogAnalyzer.show = function() {
+	var i, line, isShow;
+	for (i = 0; i < this.lines.length; i++) {
+		line = this.lines[i];
+		isShow = true;
+		if ( SfLogAnalyzer.filter.visibleTypes.hasOwnProperty(line.type) ) {
+			isShow = SfLogAnalyzer.filter.visibleTypes[line.type];
+		}
+		if ( SfLogAnalyzer.filter.search ) {
+			if ( line.rawLine.indexOf(SfLogAnalyzer.filter.search) === -1 ) {
+				isShow = false;
+			}
+		}
+		if ( isShow ) {
+			line.appendTo('logContainer');
+		}
 	}
 };
 
@@ -54,22 +94,38 @@ SfLogAnalyzer.parseLine = function(line) {
 	if ( chunks.length > 3 ) {
 		lineItem.msg = chunks[3];
 	}
+	if ( chunks.length > 4 ) {
+		lineItem.fifth = chunks[4];
+	}
 
 	return lineItem;
 
 };
 
+/**
+ * Base line without certain type
+ */
 SfLogAnalyzer.Line = {
 	rawLine: '',
 	dateTime: '',
 	type: '',
 	objId: '',
 	msg: '',
+	fifth: '',
+	getDateTime: function(dtFilter) {
+		if ( dtFilter == SfLogAnalyzer.DT_COLUMN_SHORT ) {
+			return this.dateTime.substr(0,8);
+		} else if ( dtFilter == SfLogAnalyzer.DT_COLUMN_OFF ) {
+			return '';
+		} else {
+			return this.dateTime;
+		}
+	},
 	appendTo: function(containerId) {
-		var lineElement = document.createElement('div');
+		var lineElement = document.createElement('pre');
 		var htmlMsg = this.msg.replace(/\n/g, '<br>');
-		//lineElement.innerHTML = this.dateTime + '|' + this.type + '|' + this.objId + '|' + htmlMsg;
-		lineElement.innerHTML = this.rawLine;
+		lineElement.innerHTML = this.getDateTime(SfLogAnalyzer.filter.columns.dateTime) + '|' + this.type + '|' + this.objId + '|' + htmlMsg + '|' + this.fifth;
+		//lineElement.innerHTML = this.rawLine;
 		document.getElementById(containerId).appendChild(lineElement);
 	},
 	isLimitUsageForNS: function() {

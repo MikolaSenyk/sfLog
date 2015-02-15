@@ -3,6 +3,11 @@
 <head>
 	<meta charset="utf8">
 	<title>SalesForce Debug Log Analyzer</title>
+  <style type="text/css">
+    #logFile {
+      display: none;
+    }
+  </style>
 	<script src="sfLogAnalyzer.js"></script>
 </head>
 <body>
@@ -2659,8 +2664,8 @@ NOT( ISBLANK( c2g__CODAAccountsPayableControl__c ))
 16:20:03.773 (63773570226)|CODE_UNIT_FINISHED|TestTimeEntryPortalFindMeContExt.testPositiveSaveResult
 16:20:03.775 (63775118347)|EXECUTION_FINISHED
 	</textarea>
-	<pre id="logContainer">
-	</pre>
+	<div id="logContainer">
+	</div>
 	<script type="text/javascript">
 		SfLogAnalyzer.init('logFile');
 	</script>
